@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CuentaMelo</title>
+    <style>
+        :root {
+            /* Paleta de colores: Transporte Moderno */
+            --primary: #004aad; /* Azul Autobús */
+            --secondary: #ffc107; /* Amarillo Señalización */
+            --bg-color: #f4f6f8;
+            --text-dark: #2c3e50;
+            --text-light: #ffffff;
+            --danger: #d32f2f;
+            --success: #2e7d32;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            color: var(--text-dark);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            background: var(--primary);
+            color: var(--text-light);
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h1 { margin: 0; font-size: 1.8rem; }
+        .subtitle { font-size: 1rem; opacity: 0.9; }
+
+        /* Contenedores */
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 15px;
+        }
+
+        /* Inputs y Etiquetas Grandes */
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 1.2rem;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.5rem;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        /* Botones Gigantes */
+        .btn {
+            width: 100%;
+            padding: 20px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 15px;
+            transition: transform 0.1s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+        }
+
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        .btn-start { background-color: var(--success); color: white; justify-content: center; }
+        
+        .btn-normal { 
+            background-color: var(--primary); 
+            color: white; 
+            font-size: 1.5rem; /* Letra extra grande */
+            height: 100px;
+        }
+        
+        .btn-senior { 
+            background-color: var(--secondary); 
+            color: var(--text-dark); 
+            font-size: 1.5rem;
+            height: 100px;
+        }
+
+        .btn-end { background-color: var(--danger); color: white; justify-content: center; margin-top: auto; }
+
+        /* Área de conteo en vivo */
+        .counter-badge {
+            background: rgba(255,255,255,0.3);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 1.8rem;
+        }
+        
+        .counter-badge-dark {
+            background: rgba(0,0,0,0.1);
+            color: var(--text-dark);
+        }
+
+        /* Modal de Resultados */
+        #resultModal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.4rem;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .total-money {
+            font-size: 2rem;
+            color: var(--success);
+            font-weight: bold;
+            margin-top: 15px;
+            display: block;
+        }
+
+        .hidden { display: none; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>CuentaMelo</h1>
+        <div id="statusText" class="subtitle">Esperando inicio...</div>
+    </header>
+
+    <div id="setupPanel" class="card">
+        <label for="ticketPrice">Valor Pasaje ₡:</label>
+        <input type="number" id="ticketPrice" placeholder="Ej: 350" inputmode="numeric">
+        <button class="btn btn-start" onclick="startShift()">INICIAR JORNADA</button>
+    </div>
+
+    <div id="controlPanel" class="hidden">
+        
+        <button class="btn btn-normal" onclick="addNormal()">
+            NORMAL
+            <span id="displayNormal" class="counter-badge">0</span>
+        </button>
+
+        <button class="btn btn-senior" onclick="addSenior()">
+            ADULTO MAYOR
+            <span id="displaySenior" class="counter-badge counter-badge-dark">0</span>
+        </button>
+
+        <br>
+        <button class="btn btn-end" onclick="endTrip()">FIN CARRERA</button>
+    </div>
+
+    <div id="resultModal">
+        <div class="modal-content">
+            <h2>Resumen Carrera</h2>
+            <p id="modalTime" style="color: gray;"></p>
+            
+            <div class="result-row">
+                <span>Pasajeros Normales:</span>
+                <span id="resNormal">0</span>
+            </div>
+            <div class="result-row">
+                <span>Adulto Mayor:</span>
+                <span id="resSenior">0</span>
+            </div>
+            
+            <hr>
+            
+            <label>INGRESO TOTAL:</label>
+            <span id="resTotalMoney" class="total-money">₡0</span>
+
+            <br>
+            <button class="btn btn-start" onclick="closeModal()">NUEVA CARRERA</button>
+        </div>
+    </div>
+
+    <script>
+        // Variables de estado
+        let countNormal = 0;
+        let countSenior = 0;
+        let price = 0;
+        let startTime = "";
+
+        // Referencias al DOM
+        const setupPanel = document.getElementById('setupPanel');
+        const controlPanel = document.getElementById('controlPanel');
+        const statusText = document.getElementById('statusText');
+        const priceInput = document.getElementById('ticketPrice');
+        
+        // Displays
+        const displayNormal = document.getElementById('displayNormal');
+        const displaySenior = document.getElementById('displaySenior');
+
+        function startShift() {
+            if (!priceInput.value || priceInput.value <= 0) {
+                alert("Por favor ingrese un valor de pasaje válido.");
+                return;
+            }
+
+            price = parseInt(priceInput.value);
+            countNormal = 0;
+            countSenior = 0;
+            
+            // Obtener fecha y hora
+            const now = new Date();
+            startTime = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+            // Actualizar UI
+            updateDisplays();
+            statusText.innerText = "Inicio: " + startTime;
+            
+            // Cambiar pantallas
+            setupPanel.classList.add('hidden');
+            controlPanel.classList.remove('hidden');
+        }
+
+        function addNormal() {
+            countNormal++;
+            updateDisplays();
+        }
+
+        function addSenior() {
+            countSenior++;
+            updateDisplays();
+        }
+
+        function updateDisplays() {
+            displayNormal.innerText = countNormal;
+            displaySenior.innerText = countSenior;
+        }
+
+        function endTrip() {
+            if(!confirm("¿Seguro que desea finalizar la carrera?")) return;
+
+            // Calcular totales
+            const totalMoney = countNormal * price;
+
+            // Llenar Modal
+            document.getElementById('modalTime').innerText = startTime;
+            document.getElementById('resNormal').innerText = countNormal;
+            document.getElementById('resSenior').innerText = countSenior;
+            // Formatear moneda (estilo Costa Rica colones, o genérico)
+            document.getElementById('resTotalMoney').innerText = "₡" + totalMoney.toLocaleString();
+
+            document.getElementById('resultModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            // Reiniciar para la siguiente carrera pero manteniendo el precio
+            document.getElementById('resultModal').style.display = 'none';
+            countNormal = 0;
+            countSenior = 0;
+            updateDisplays();
+            
+            // Opcional: Si quieres volver a pedir la hora de inicio, descomenta la siguiente línea:
+            // location.reload(); 
+            
+            // Por ahora, reiniciamos contadores pero mantenemos la sesión activa
+             const now = new Date();
+             startTime = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+             statusText.innerText = "Carrera iniciada: " + startTime;
+        }
+    </script>
+</body>
+</html>
