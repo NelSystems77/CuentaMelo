@@ -6,9 +6,9 @@
     <title>CuentaMelo</title>
     <style>
         :root {
-            /* Paleta de colores: Transporte Moderno */
-            --primary: #004aad; /* Azul Autobús */
-            --secondary: #ffc107; /* Amarillo Señalización */
+            /* Paleta de colores */
+            --primary: #004aad; /* Azul */
+            --secondary: #ffc107; /* Amarillo */
             --bg-color: #f4f6f8;
             --text-dark: #2c3e50;
             --text-light: #ffffff;
@@ -69,6 +69,8 @@
             border-radius: 10px;
             text-align: center;
             margin-bottom: 10px;
+            /* Evitar zoom en iOS al tocar inputs */
+            transform: scale(1); 
         }
 
         /* Botones Gigantes */
@@ -86,6 +88,7 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+            touch-action: manipulation; /* Mejora respuesta táctil */
         }
 
         .btn:active {
@@ -98,7 +101,7 @@
         .btn-normal { 
             background-color: var(--primary); 
             color: white; 
-            font-size: 1.5rem; /* Letra extra grande */
+            font-size: 1.5rem; 
             height: 100px;
         }
         
@@ -173,6 +176,7 @@
     <div id="setupPanel" class="card">
         <label for="ticketPrice">Valor Pasaje ₡:</label>
         <input type="number" id="ticketPrice" placeholder="Ej: 350" inputmode="numeric">
+        <p style="font-size: 0.9rem; color: #666; text-align: center;">Ingrese el valor y presione iniciar</p>
         <button class="btn btn-start" onclick="startShift()">INICIAR JORNADA</button>
     </div>
 
@@ -259,11 +263,14 @@
         function addNormal() {
             countNormal++;
             updateDisplays();
+            // Vibración leve al tocar (si el dispositivo lo soporta)
+            if (navigator.vibrate) navigator.vibrate(50);
         }
 
         function addSenior() {
             countSenior++;
             updateDisplays();
+            if (navigator.vibrate) navigator.vibrate(50);
         }
 
         function updateDisplays() {
@@ -281,26 +288,34 @@
             document.getElementById('modalTime').innerText = startTime;
             document.getElementById('resNormal').innerText = countNormal;
             document.getElementById('resSenior').innerText = countSenior;
-            // Formatear moneda (estilo Costa Rica colones, o genérico)
+            // Formatear moneda 
             document.getElementById('resTotalMoney').innerText = "₡" + totalMoney.toLocaleString();
 
             document.getElementById('resultModal').style.display = 'flex';
         }
 
         function closeModal() {
-            // Reiniciar para la siguiente carrera pero manteniendo el precio
+            // 1. Ocultar el modal de resultados
             document.getElementById('resultModal').style.display = 'none';
+            
+            // 2. Ocultar el panel de control (los botones grandes)
+            controlPanel.classList.add('hidden');
+            
+            // 3. Mostrar de nuevo el panel de configuración (precio)
+            setupPanel.classList.remove('hidden');
+            
+            // 4. Reiniciar contadores internos
             countNormal = 0;
             countSenior = 0;
             updateDisplays();
+
+            // 5. Dejar el precio anterior visible por si quiere reusarlo, 
+            // pero reiniciar el texto de estado.
+            statusText.innerText = "Esperando nueva carrera...";
             
-            // Opcional: Si quieres volver a pedir la hora de inicio, descomenta la siguiente línea:
-            // location.reload(); 
-            
-            // Por ahora, reiniciamos contadores pero mantenemos la sesión activa
-             const now = new Date();
-             startTime = now.toLocaleDateString() + ' ' + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-             statusText.innerText = "Carrera iniciada: " + startTime;
+            // Opcional: Enfocar el input para escribir rápido
+            priceInput.focus(); 
+            priceInput.select();
         }
     </script>
 </body>
